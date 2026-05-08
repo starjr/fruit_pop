@@ -73,13 +73,16 @@ CA:56:EC:25:35:25:A0:E6:FF:61:D3:72:80:5E:4E:7D:1D:C2:DD:B9:48:CC:E2:0D:DA:B3:6D
 
 법인 계정은 면제. 미리 친구 / 가족 12명의 Gmail 주소를 모아 두세요.
 
-### 3. 개인정보처리방침 호스팅
-`store/privacy_policy.md` 의 내용을 공개된 URL 에 올려야 합니다. 가장 빠른 방법:
-- GitHub 저장소를 만들고 `README.md` 또는 `privacy.md` 로 푸시
-- Settings → Pages → Source: main → Save → 5분 후 `https://<user>.github.io/<repo>/privacy.html` 접속 가능
-- 또는 Notion 페이지 / 개인 블로그 / Vercel 정적 호스팅
+### 3. 개인정보처리방침 호스팅 ✅ (자동화 완료)
+이미 GitHub Pages 로 호스팅되어 있습니다:
 
-URL 이 준비되면 Play Console > 메인 스토어 등록정보 > 개인정보처리방침 에 입력.
+```
+https://starjr.github.io/fruit_pop/privacy/
+```
+
+이 URL 을 Play Console > 메인 스토어 등록정보 > **개인정보처리방침** 에 그대로
+입력하세요. 내용은 `docs/privacy.md` 에서 관리되며 GitHub 푸시 후 1~2 분 안에
+재배포됩니다 (`store/privacy_policy.md` 와 동기화 유지).
 
 > 연락처 이메일은 `starjr@gmail.com` 으로 두 파일(`store/privacy_policy.md`,
 > `lib/data/legal_text.dart`) 에 이미 반영됨. Play Console “개발자 연락처” 에도
