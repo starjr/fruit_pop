@@ -17,6 +17,13 @@ class LocalStore {
     _instance = LocalStore._(prefs);
   }
 
+  // ── 온보딩 ──────────────────────────────────────────────
+  /// 첫 실행 시 닉네임 입력 화면을 띄우기 위한 플래그.
+  /// 닉네임을 한 번이라도 저장(=완료) 하면 true 가 된다.
+  bool get isOnboarded => _prefs.getBool('isOnboarded') ?? false;
+  Future<void> completeOnboarding() =>
+      _prefs.setBool('isOnboarded', true);
+
   // ── 프로필 ──────────────────────────────────────────────
   String get nickname => _prefs.getString('nickname') ?? '플레이어';
   Future<void> setNickname(String v) async {
@@ -197,10 +204,11 @@ class LocalStore {
     return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
   }
 
-  /// 모든 사용자 데이터(닉네임/코인/베스트/기록/챌린지/설정/스킨) 를 제거.
-  /// 다음 접근 시 기본값으로 복원된다.
+  /// 모든 사용자 데이터(닉네임/코인/베스트/기록/챌린지/설정/스킨/온보딩) 를 제거.
+  /// 다음 접근 시 기본값으로 복원되며 온보딩 화면이 다시 표시된다.
   Future<void> clearAll() async {
     const keys = [
+      'isOnboarded',
       'nickname',
       'coins',
       'bestScore',

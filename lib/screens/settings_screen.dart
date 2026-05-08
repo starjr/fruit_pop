@@ -4,6 +4,7 @@ import '../widgets/pop_button.dart';
 import '../widgets/icons.dart';
 import '../services/local_store.dart';
 import 'legal_screen.dart';
+import 'onboarding_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -61,9 +62,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (ok != true) return;
     await LocalStore.I.clearAll();
     if (!mounted) return;
-    setState(() {});
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('초기화 완료')),
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+      (_) => false,
     );
   }
 

@@ -12,15 +12,40 @@ void main() {
     await LocalStore.init();
   });
 
-  testWidgets('app boots and shows home title', (WidgetTester tester) async {
+  testWidgets('first launch shows onboarding screen', (tester) async {
     final binding = TestWidgetsFlutterBinding.ensureInitialized();
     await binding.setSurfaceSize(const ui.Size(430, 932));
+
+    await LocalStore.I.clearAll();
+    expect(LocalStore.I.isOnboarded, isFalse);
+
+    await tester.pumpWidget(const FruitMergeApp());
+    await tester.pumpAndSettle();
+
+    expect(find.text('환영합니다!', skipOffstage: false), findsNothing,
+        reason: '두 줄 헤더라 정확 매칭이 아닐 수 있음');
+    expect(find.textContaining('환영합니다'), findsOneWidget);
+    expect(find.text('시작하기'), findsOneWidget);
+    expect(find.text('게임 시작'), findsNothing);
+
+    await binding.setSurfaceSize(null);
+  });
+
+  testWidgets('after onboarding shows home screen', (tester) async {
+    final binding = TestWidgetsFlutterBinding.ensureInitialized();
+    await binding.setSurfaceSize(const ui.Size(430, 932));
+
+    await LocalStore.I.clearAll();
+    await LocalStore.I.setNickname('테스터');
+    await LocalStore.I.completeOnboarding();
+    expect(LocalStore.I.isOnboarded, isTrue);
 
     await tester.pumpWidget(const FruitMergeApp());
     await tester.pumpAndSettle();
 
     expect(find.text('Fruit Pop'), findsOneWidget);
     expect(find.text('게임 시작'), findsOneWidget);
+    expect(find.text('테스터님'), findsOneWidget);
 
     await binding.setSurfaceSize(null);
   });
@@ -48,5 +73,15 @@ void main() {
     expect(s.bestScore, 1000);
     expect(s.recentGames.length, 1);
     expect(s.coins, initialCoins + 100);
+  });
+
+  test('completeOnboarding persists across reads', () async {
+    final s = LocalStore.I;
+    await s.clearAll();
+    expect(s.isOnboarded, isFalse);
+    await s.completeOnboarding();
+    expect(s.isOnboarded, isTrue);
+    await s.clearAll();
+    expect(s.isOnboarded, isFalse);
   });
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'theme/app_colors.dart';
 import 'screens/home_screen.dart';
+import 'screens/onboarding_screen.dart';
 import 'services/local_store.dart';
 
 Future<void> main() async {
@@ -32,7 +33,9 @@ class FruitMergeApp extends StatelessWidget {
         ),
         colorScheme: ColorScheme.fromSeed(seedColor: AppColors.candyPink),
       ),
-      home: const HomeScreen(),
+      home: LocalStore.I.isOnboarded
+          ? const HomeScreen()
+          : const OnboardingScreen(),
     );
   }
 }
