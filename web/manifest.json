@@ -1,0 +1,35 @@
+{
+    "name": "Fruit Pop",
+    "short_name": "Fruit Pop",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#FFE5F1",
+    "theme_color": "#FF8FB1",
+    "description": "Fruit Pop - 과일 합치기 게임.",
+    "orientation": "portrait-primary",
+    "prefer_related_applications": false,
+    "icons": [
+        {
+            "src": "icons/Icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-maskable-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "icons/Icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}
