@@ -9,6 +9,7 @@ import 'game_screen.dart';
 import 'leaderboard_screen.dart';
 import 'settings_screen.dart';
 import 'shop_screen.dart';
+import '../widgets/coupang_banner.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -171,6 +172,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         child: const AppIcon(IconKind.settings, size: 22),
                       ),
                     ]),
+                    const SizedBox(height: 10),
+                    const CoupangBanner(),
                     const SizedBox(height: 10),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

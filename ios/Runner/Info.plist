@@ -45,5 +45,15 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>io.flutter.embedded_views_preview</key>
+	<true/>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>쿠팡 파트너스 관심사 기반 광고를 표시하기 위해 추적 권한을 요청합니다. 거부해도 게임 플레이에는 영향이 없습니다.</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>https</string>
+		<string>http</string>
+		<string>coupang</string>
+	</array>
 </dict>
 </plist>

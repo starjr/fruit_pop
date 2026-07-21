@@ -15,6 +15,19 @@ class LocalStore {
   static Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     _instance = LocalStore._(prefs);
+    await _instance._migrateBestMaxFruitIfNeeded();
+  }
+
+  /// 구버전 기기: 기록만 있고 peak 키가 없을 때 한 번 역산해 저장한다.
+  Future<void> _migrateBestMaxFruitIfNeeded() async {
+    if (_prefs.containsKey('bestMaxFruitReached')) return;
+    var peak = 0;
+    for (final g in recentGames) {
+      if (g.maxFruitId > peak) peak = g.maxFruitId;
+    }
+    if (peak > 0) {
+      await _prefs.setInt('bestMaxFruitReached', peak);
+    }
   }
 
   // ── 온보딩 ──────────────────────────────────────────────
@@ -46,6 +59,9 @@ class LocalStore {
 
   // ── 베스트 점수 ─────────────────────────────────────────
   int get bestScore => _prefs.getInt('bestScore') ?? 0;
+
+  /// 역대 한 판에서 도달한 최대 과일 id (0=체리 … 10=수박). 스킨 해금 등에 사용.
+  int get bestMaxFruitReached => _prefs.getInt('bestMaxFruitReached') ?? 0;
 
   // ── 최근 게임 기록 (최대 50개) ──────────────────────────
   List<GameRecord> get recentGames {
@@ -84,9 +100,6 @@ class LocalStore {
 
   bool get hapticEnabled => _prefs.getBool('hapticEnabled') ?? false;
   Future<void> setHapticEnabled(bool v) => _prefs.setBool('hapticEnabled', v);
-
-  bool get pushEnabled => _prefs.getBool('pushEnabled') ?? false;
-  Future<void> setPushEnabled(bool v) => _prefs.setBool('pushEnabled', v);
 
   // ── 데일리 챌린지 ───────────────────────────────────────
   /// 오늘 자 챌린지를 반환. 날짜가 바뀌었으면 새로 생성·저장한다.
@@ -145,6 +158,11 @@ class LocalStore {
     final isNewBest = score > prevBest;
     if (isNewBest) {
       await _prefs.setInt('bestScore', score);
+    }
+
+    final prevPeak = bestMaxFruitReached;
+    if (maxFruitId > prevPeak) {
+      await _prefs.setInt('bestMaxFruitReached', maxFruitId);
     }
 
     // 최근 기록 (최신이 앞)
@@ -216,6 +234,7 @@ class LocalStore {
       'bgmEnabled',
       'sfxEnabled',
       'hapticEnabled',
+      'bestMaxFruitReached',
       'pushEnabled',
       'dailyChallenge',
       'ownedSkins',

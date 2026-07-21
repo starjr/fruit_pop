@@ -73,6 +73,31 @@ void main() {
     expect(s.bestScore, 1000);
     expect(s.recentGames.length, 1);
     expect(s.coins, initialCoins + 100);
+    expect(s.bestMaxFruitReached, 6);
+  });
+
+  test('LocalStore bestMaxFruitReached keeps peak across games', () async {
+    final s = LocalStore.I;
+    await s.clearAll();
+    expect(s.bestMaxFruitReached, 0);
+    await s.recordGame(
+      score: 500,
+      maxFruitId: 8,
+      combo: 2,
+      merges: 8,
+      elapsedSec: 60,
+      mergesByOutputId: const {8: 1},
+    );
+    expect(s.bestMaxFruitReached, 8);
+    await s.recordGame(
+      score: 300,
+      maxFruitId: 4,
+      combo: 1,
+      merges: 4,
+      elapsedSec: 20,
+      mergesByOutputId: const {},
+    );
+    expect(s.bestMaxFruitReached, 8);
   });
 
   test('completeOnboarding persists across reads', () async {

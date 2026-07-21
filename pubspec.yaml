@@ -1,7 +1,7 @@
 name: fruit_pop
 description: Fruit Pop - 과일 합치기(수이카 스타일) 게임
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.0.1+5
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -15,6 +15,11 @@ dependencies:
   flame_forge2d: ^0.18.0
   google_fonts: ^6.2.1
   shared_preferences: ^2.2.2
+  audioplayers: ^6.1.0
+  webview_flutter: ^4.10.0
+  url_launcher: ^6.3.1
+  advertising_id: ^2.7.1
+  app_tracking_transparency: ^2.0.6
 
 dev_dependencies:
   flutter_test:
@@ -26,6 +31,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/icon/
+    - assets/audio/
 
 flutter_launcher_icons:
   image_path: "assets/icon/app_icon.png"

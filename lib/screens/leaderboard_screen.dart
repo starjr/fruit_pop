@@ -48,7 +48,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   Widget build(BuildContext context) {
     final store = LocalStore.I;
     final best = store.bestScore;
-    final games = _tab == 0 ? store.topScores(n: 10) : store.recentGames;
+    final games = _tab == 0 ? store.topScores(n: 10) : store.recentGames.take(20).toList();
 
     return Scaffold(
       body: Container(

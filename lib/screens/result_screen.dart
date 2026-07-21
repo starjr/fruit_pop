@@ -6,6 +6,9 @@ import '../widgets/pop_button.dart';
 import '../widgets/icons.dart';
 import '../widgets/mascot.dart';
 import '../widgets/fruits/fruit_painters.dart';
+import '../widgets/coupang_banner.dart';
+import '../widgets/coupang_affiliate_button.dart';
+import '../data/coupang_config.dart';
 
 class ResultScreen extends StatelessWidget {
   final int score;
@@ -125,6 +128,8 @@ class ResultScreen extends StatelessWidget {
                               ]),
                             ),
                           ],
+                          const SizedBox(height: 12),
+                          const CoupangBanner(),
                         ]),
                       ),
                       const Positioned(top: -50, left: 0, right: 0, child: Center(child: Mascot(size: 110, mood: MascotMood.wow))),
@@ -162,6 +167,10 @@ class ResultScreen extends StatelessWidget {
                       ]),
                     )),
                   ]),
+                  const SizedBox(height: 10),
+                  CoupangAffiliateButton(
+                    showDisclosure: !CoupangConfig.hasBannerAd,
+                  ),
                 ],
               ),
             ),

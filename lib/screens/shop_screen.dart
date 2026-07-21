@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../data/fruit_data.dart';
 import '../theme/app_colors.dart';
 import '../widgets/pop_button.dart';
 import '../widgets/icons.dart';
@@ -15,7 +16,8 @@ class _SkinDef {
   final String name;
   final String sub;
   final int price;
-  final bool locked; // 추후 레벨 잠금용
+  /// null 이면 항상 구매 가능. 값이 있으면 역대 최대 과일 id가 이 값 이상일 때 해금.
+  final int? unlockAfterMaxFruitId;
   final Color g1;
   final Color g2;
   final String emoji;
@@ -27,7 +29,7 @@ class _SkinDef {
     required this.g1,
     required this.g2,
     required this.emoji,
-    this.locked = false,
+    this.unlockAfterMaxFruitId,
   });
 }
 
@@ -37,7 +39,7 @@ class _ShopScreenState extends State<ShopScreen> {
     _SkinDef(id: 'neon', name: '네온 파티', sub: '밤하늘 컬러', price: 1200, g1: AppColors.accentPurple, g2: AppColors.candyPink, emoji: '✨'),
     _SkinDef(id: 'pastel', name: '파스텔 드림', sub: '몽글몽글', price: 800, g1: AppColors.candyPinkLight, g2: AppColors.candySky, emoji: '🌸'),
     _SkinDef(id: 'pixel', name: '8비트 픽셀', sub: '레트로 게임', price: 1500, g1: AppColors.accentCoral, g2: AppColors.candyYellow, emoji: '👾'),
-    _SkinDef(id: 'sushi', name: '스시 셰프', sub: '과일 → 초밥', price: 2000, g1: AppColors.candyPink, g2: AppColors.candyMint, emoji: '🍣', locked: true),
+    _SkinDef(id: 'sushi', name: '스시 셰프', sub: '과일 → 초밥', price: 2000, g1: AppColors.candyPink, g2: AppColors.candyMint, emoji: '🍣', unlockAfterMaxFruitId: 8),
     _SkinDef(id: 'winter', name: '겨울 동화', sub: '얼음 과일', price: 1800, g1: AppColors.candySky, g2: Colors.white, emoji: '❄️'),
   ];
 
@@ -53,6 +55,7 @@ class _ShopScreenState extends State<ShopScreen> {
 
   Future<void> _onTryBuy(_SkinDef s) async {
     final store = LocalStore.I;
+    if (_isMasteryLocked(s, store)) return;
     final messenger = ScaffoldMessenger.of(context);
     if (store.coins < s.price) {
       messenger.showSnackBar(
@@ -143,6 +146,7 @@ class _ShopScreenState extends State<ShopScreen> {
                 final s = _skins[i];
                 final isOwned = owned.contains(s.id);
                 final isEquipped = equipped == s.id;
+                final masteryLocked = _isMasteryLocked(s, store);
                 return Container(
                   decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), boxShadow: [BoxShadow(color: AppColors.ink.withValues(alpha: 0.1), blurRadius: 16, offset: const Offset(0, 4))]),
                   clipBehavior: Clip.antiAlias,
@@ -162,9 +166,25 @@ class _ShopScreenState extends State<ShopScreen> {
                             Text('사용 중', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w800)),
                           ]),
                         )),
-                        if (s.locked) Positioned.fill(child: Container(
+                        if (masteryLocked) Positioned.fill(child: Container(
                           color: Colors.black.withValues(alpha: 0.4),
-                          child: const Center(child: AppIcon(IconKind.lock, size: 22, color: Colors.white)),
+                          child: Center(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const AppIcon(IconKind.lock, size: 22, color: Colors.white),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    _unlockHint(s),
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700, height: 1.25),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         )),
                       ]),
                     ),
@@ -174,7 +194,7 @@ class _ShopScreenState extends State<ShopScreen> {
                         Text(s.name, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: AppColors.ink)),
                         Text(s.sub, style: const TextStyle(fontSize: 10, color: AppColors.inkLight)),
                         const SizedBox(height: 8),
-                        SizedBox(width: double.infinity, child: _btnFor(s, isOwned, isEquipped)),
+                        SizedBox(width: double.infinity, child: _btnFor(s, isOwned, isEquipped, masteryLocked, store)),
                       ]),
                     ),
                   ]),
@@ -187,12 +207,35 @@ class _ShopScreenState extends State<ShopScreen> {
     );
   }
 
-  Widget _btnFor(_SkinDef s, bool owned, bool equipped) {
+  bool _isMasteryLocked(_SkinDef s, LocalStore store) {
+    final need = s.unlockAfterMaxFruitId;
+    if (need == null) return false;
+    return store.bestMaxFruitReached < need;
+  }
+
+  String _unlockHint(_SkinDef s) {
+    final need = s.unlockAfterMaxFruitId;
+    if (need == null || need < 0 || need >= fruits.length) return '조건 미충족';
+    final name = fruits[need].name;
+    return '$name 이상\n만들면 해금';
+  }
+
+  Widget _btnFor(_SkinDef s, bool owned, bool equipped, bool masteryLocked, LocalStore store) {
     if (equipped) {
       return PopButton(variant: PopButtonVariant.ghost, height: 30, disabled: true, onTap: () {}, child: const Text('사용 중', style: TextStyle(fontSize: 11)));
     }
-    if (s.locked) {
-      return PopButton(height: 30, disabled: true, onTap: () {}, child: const Text('레벨 20+', style: TextStyle(fontSize: 11)));
+    if (masteryLocked) {
+      return PopButton(
+        height: 30,
+        disabled: true,
+        onTap: () {},
+        child: Text(
+          '${fruits[s.unlockAfterMaxFruitId!.clamp(0, fruits.length - 1)].name} ${store.bestMaxFruitReached}/${s.unlockAfterMaxFruitId}',
+          style: const TextStyle(fontSize: 10),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      );
     }
     if (owned) {
       return PopButton(variant: PopButtonVariant.mint, height: 30, onTap: () => _onEquip(s), child: const Text('장착하기', style: TextStyle(fontSize: 11)));

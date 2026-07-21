@@ -1,13 +1,16 @@
-import 'dart:math' as math;
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 import '../data/fruit_data.dart';
+import '../data/skin_catalog.dart';
 import '../theme/app_colors.dart';
 import '../widgets/fruits/fruit_painters.dart';
 import '../widgets/icons.dart';
 import '../widgets/pop_button.dart';
 import '../services/local_store.dart';
+import '../services/audio_service.dart';
 import 'result_screen.dart';
 
 // 가로 플레이 영역을 넓게 사용하기 위해 보드 비율을 가로로 확장한다.
@@ -64,7 +67,10 @@ class _GameScreenState extends State<GameScreen>
   int _score = 0;
   int _combo = 0;
   int _merges = 0;
-  int _next = 1;
+  /// 이번에 떨어뜨릴 과일(보드 미리보기·드롭과 동일).
+  int _handId = 1;
+  /// 그 다음 손에 들 과일 — Suika 스타일로 HUD `NEXT`에만 표시.
+  int _nextQueuedId = 1;
   int _maxFruitId = 0;
   // 결과로 만들어진 과일을 id별로 카운트(데일리 챌린지 진행도 계산에 사용).
   final Map<int, int> _mergesByOutputId = <int, int>{};
@@ -83,7 +89,10 @@ class _GameScreenState extends State<GameScreen>
   @override
   void initState() {
     super.initState();
-    _next = _spawnableId();
+    AudioService.I.attachLifecycleObserver();
+    unawaited(AudioService.I.setGameSessionActive(true));
+    _handId = _spawnableId();
+    _nextQueuedId = _spawnableId();
     _ticker = createTicker(_onTick)..start();
     _elapsedTimer = Timer.periodic(
       const Duration(seconds: 1),
@@ -93,6 +102,8 @@ class _GameScreenState extends State<GameScreen>
 
   @override
   void dispose() {
+    unawaited(AudioService.I.setGameSessionActive(false));
+    AudioService.I.detachLifecycleObserver();
     _ticker.dispose();
     _elapsedTimer?.cancel();
     _frame.dispose();
@@ -100,6 +111,18 @@ class _GameScreenState extends State<GameScreen>
   }
 
   int _spawnableId() => 1 + _rng.nextInt(5);
+
+  void _hapticLight() {
+    if (LocalStore.I.hapticEnabled) {
+      HapticFeedback.selectionClick();
+    }
+  }
+
+  void _hapticMedium() {
+    if (LocalStore.I.hapticEnabled) {
+      HapticFeedback.mediumImpact();
+    }
+  }
 
   /// 본체 시각 반지름이 곧 물리 반지름이 되도록 매핑.
   /// fruits[id].radius (10~156) 를 게임 보드에 맞는 18~70 범위로 압축.
@@ -110,7 +133,7 @@ class _GameScreenState extends State<GameScreen>
   }
 
   double _clampedPreviewX(double localDx, double widgetWidth) {
-    final radius = _radiusForId(_next);
+    final radius = _radiusForId(_handId);
     final boardX = (localDx / widgetWidth) * _boardWidth;
     return boardX
         .clamp(_wallInset + radius, _boardWidth - _wallInset - radius)
@@ -152,7 +175,7 @@ class _GameScreenState extends State<GameScreen>
     }
     _lastDropAt = DateTime.now();
 
-    final id = _next;
+    final id = _handId;
     final radius = _radiusForId(id);
     final spawnY = _previewBoardY(radius);
     // 살짝의 좌우 흔들림으로 완벽한 수직 스택을 방지.
@@ -170,9 +193,12 @@ class _GameScreenState extends State<GameScreen>
     );
 
     setState(() {
-      _next = _spawnableId();
+      _handId = _nextQueuedId;
+      _nextQueuedId = _spawnableId();
       if (id > _maxFruitId) _maxFruitId = id;
     });
+    AudioService.I.playDrop();
+    _hapticLight();
   }
 
   void _onPointerCancel(PointerCancelEvent e) {
@@ -201,6 +227,7 @@ class _GameScreenState extends State<GameScreen>
     final int beforeMax = _maxFruitId;
     final int beforeCombo = _combo;
     bool mergedThisStep = false;
+    bool megaMergeSfx = false;
 
     const floorY = _boardHeight - _floorInset;
     final n = _fruits.length;
@@ -341,6 +368,7 @@ class _GameScreenState extends State<GameScreen>
               _combo = (_combo + 1).clamp(1, 99);
               _score += 500;
               _doubleMelonPop = true;
+              megaMergeSfx = true;
               break;
             }
           }
@@ -403,6 +431,14 @@ class _GameScreenState extends State<GameScreen>
           ..clear()
           ..addAll(next);
       }
+    }
+
+    if (megaMergeSfx) {
+      AudioService.I.playMegaMerge();
+      _hapticMedium();
+    } else if (mergedThisStep) {
+      AudioService.I.playMerge();
+      _hapticLight();
     }
 
     if (mergedThisStep) {
@@ -619,7 +655,7 @@ class _GameScreenState extends State<GameScreen>
               SizedBox(
                 width: 32,
                 height: 32,
-                child: FruitWidget(id: _next, size: 32),
+                child: FruitWidget(id: _nextQueuedId, size: 32),
               ),
             ],
           ),
@@ -673,14 +709,24 @@ class _GameScreenState extends State<GameScreen>
                         painter: _BoardPainter(
                           fruits: _fruits,
                           previewX: _previewX,
-                          previewId: _next,
-                          previewRadius: _radiusForId(_next),
+                          previewId: _handId,
+                          previewRadius: _radiusForId(_handId),
                           repaint: _frame,
                         ),
                         size: Size.infinite,
                       ),
                     ),
                   ),
+                  if (SkinCatalog.boardOverlay(LocalStore.I.equippedSkin) != null)
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: SkinCatalog.boardOverlay(LocalStore.I.equippedSkin)!,
+                          ),
+                        ),
+                      ),
+                    ),
                   if (_previewX == null)
                     Positioned(
                       top: (_dangerLineY * constraints.maxHeight / _boardHeight) + 4,

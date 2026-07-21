@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../widgets/pop_button.dart';
 import '../widgets/icons.dart';
+import '../data/skin_catalog.dart';
 import '../services/local_store.dart';
+import '../services/audio_service.dart';
 import 'legal_screen.dart';
 import 'onboarding_screen.dart';
 
@@ -118,14 +120,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ]),
                 ),
                 _section('🔊 사운드', [
-                  _toggle('배경음악', store.bgmEnabled, (v) async { await store.setBgmEnabled(v); setState(() {}); }),
-                  _toggle('효과음', store.sfxEnabled, (v) async { await store.setSfxEnabled(v); setState(() {}); }),
+                  _toggle('배경음악', store.bgmEnabled, (v) async {
+                    await store.setBgmEnabled(v);
+                    await AudioService.I.applySettings();
+                    if (mounted) setState(() {});
+                  }),
+                  _toggle('효과음', store.sfxEnabled, (v) async {
+                    await store.setSfxEnabled(v);
+                    await AudioService.I.applySettings();
+                    if (mounted) setState(() {});
+                  }),
                   _toggle('진동', store.hapticEnabled, (v) async { await store.setHapticEnabled(v); setState(() {}); }),
                 ]),
                 _section('🎮 게임', [
-                  _toggle('알림', store.pushEnabled, (v) async { await store.setPushEnabled(v); setState(() {}); }),
+                  _info('데일리 챌린지', '날짜가 바뀌면 자동으로 갱신돼요'),
                   _info('조작 방식', '드래그하여 떨어뜨리기'),
-                  _info('과일 스타일', '기본'),
+                  _info('과일 스타일', SkinCatalog.label(store.equippedSkin)),
                 ]),
                 _section('ℹ️ 정보', [
                   _info('언어', '한국어'),

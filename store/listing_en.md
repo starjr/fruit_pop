@@ -43,41 +43,41 @@ trigger and watch a tower collapse into one massive combo.
 If a fruit sits above the LIMIT line for more than ~1.5 seconds, the round
 ends. Every drop matters — clean play wins.
 
-▶ Casual, offline, ad-free
-The game works completely offline. No ads. No in-app purchases.
-Perfect for a quick round during lunch, commute, or right before bed.
+▶ Casual puzzle, free to play
+No in-app purchases. Short sessions for lunch, commute, or before bed.
+May show Coupang Partners affiliate banners/links.
 
 ▶ You might love this if you...
 • enjoy short, snappy puzzles with great tactile feedback
 • love satisfying combo / merge / cascade mechanics
-• want a clean, ad-free experience
 • know the "just one more round" trap and embrace it
 
 Start your watermelon journey now with Fruit Pop!
 
 ---
-※ This app does not collect or transmit any personal information. All data is
-   stored locally on your device and is removed when you uninstall the app.
+※ Game scores and settings stay on your device. The app may include Coupang
+  Partners affiliate banners/links and, when allowed, use the advertising ID
+  (ADID) for interest-based banners. See the privacy policy for details.
 ```
 
 ---
 
 ## Category / Tags
 - **Category**: Games → Puzzle
-- **Suggested Tags**: Casual, Puzzle, One-hand, Offline, Family
+- **Suggested Tags**: Casual, Puzzle, One-hand, Family
 - **Content rating**: IARC survey answered "no violence / no fear / no language"
   → **Everyone (3+)**
 
 ## Privacy policy URL
-- Required before publishing. Host the contents of `store/privacy_policy.md`
-  on a public URL (GitHub Pages works free).
+- https://starjr.github.io/fruit_pop/privacy/
+- Source: `docs/privacy.md`
 
 ## App access / Ads / IAP
 - **All features are available without restriction**: ✅ Yes
-- **Contains ads**: ❌ No
+- **Contains ads**: ✅ Yes (Coupang Partners affiliate banners/links)
 - **Contains in-app purchases**: ❌ No
 
 ## Data safety
-- **Does your app collect or share user data?** ❌ No
-- The Data safety card will read: "This app does not collect or share any user
-  data."
+- **Does your app collect or share user data?** Yes — Device or other IDs
+  (Advertising ID), when allowed; shared with Coupang Partners for ads
+- Local gameplay data (scores, nickname, etc.) stays on device only
